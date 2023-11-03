@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo '🏗️👷 Styling, testing and building your project before committing'
+
+# Check Prettier Standards
+yarn format ||
+(
+    echo '🚨 Prettier Check Failed. Make the required changes listed above, add changes and try to commit again.';
+    false;
+)
+
+yarn lint ||
+(
+  echo '🚨 EsLint Check Failed. Make the required changes listed above, add changes and try to commit again.'
+  false;
+)
+
+git add -A .
+
+
+# Testing the app with Jest
+# yarn test ||
+# (
+#     echo '🚨 Jest Check Failed. Make the required changes listed above, add changes and try to commit again.'
+#     false;
+# )
+
+echo 'Code looks good... Trying to build now. 🚧🚧🚧'
+
+yarn build ||
+(
+    echo '❌👷 Build failed 🔨❌ Next build failed: View the errors above to see why. '
+    false;
+)
+
+# If everything passes... Now we can commit
+echo 'Committing this now. ✅'
