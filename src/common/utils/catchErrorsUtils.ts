@@ -15,6 +15,7 @@ export function CRUDPrismaCatchError(error: any, logger: Logger) {
   } else if (error.status === 404) {
     throw new NotFoundException(error.message);
   }
+
   logger.error(error.message);
   throw new InternalServerErrorException(error.message);
 }

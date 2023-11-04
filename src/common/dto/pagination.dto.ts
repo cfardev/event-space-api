@@ -5,24 +5,25 @@ import { IsInt, IsOptional, IsPositive, Min } from 'class-validator';
 export class PaginationDto {
   @ApiProperty({
     type: Number,
-    description: 'Numero de la página en la que quieres estar',
+    description: 'Numero de elementos que quieres que se muestren',
     example: 0,
   })
   @IsOptional()
   @IsInt()
   @Min(0)
   @Type(() => Number)
-  page?: number;
+  limit?: number;
 
   @ApiProperty({
     type: Number,
-    description: 'El tamaño de cada página',
     example: 10,
     default: 100,
+    description:
+      'Numero de elementos que quieres que se salten desde el inicio',
   })
   @IsOptional()
   @IsInt()
   @IsPositive()
   @Type(() => Number)
-  size?: number;
+  offset?: number;
 }

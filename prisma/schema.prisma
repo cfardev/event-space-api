@@ -3,13 +3,208 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
+  username    String        @unique
+  password    String
+  role        UserRole      @default(USER)
+  UserInfo    UserInfo[]
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  BankAccount BankAccount?
+  Place       Place[]
+  Reservation Reservation[]
+
+  @@map("user")
+}
+
+enum UserRole {
+  ADMIN
+  WORKER
+  CORPORATIVE_USER
+  USER
+}
+
+model UserInfo {
+  id          Int      @id @default(autoincrement())
+  name        String
+  lastname    String
+  phone       String
+  photoUrl    String   @map("photo_url")
+  address     String
+  personalId  String
+  companyName String?  @map("company_name")
+  ruc         String?
+  birthDay    DateTime @map("birth_day")
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int      @map("user_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("user_info")
+}
+
+model BankAccount {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String   
-  createdAt DateTime @default(now())
+  number    String   @unique
+  bank      String
+  userId    Int      @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("bank_account")
+}
+
+model Bill {
+  id          Int          @id @default(autoincrement())
+  subTotal    Float        @map("sub_total")
+  serviceTax  Float        @map("service_tax")
+  iva         Float        @map("iva")
+  total       Float
+  Payment     Payment?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  Reservation Reservation?
+
+  @@map("bill")
+}
+
+model Payment {
+  id            Int      @id @default(autoincrement())
+  referenceCode String   @unique @map("reference_code")
+  bill          Bill     @relation(fields: [billId], references: [id])
+  billId        Int      @unique @map("bill_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("payment")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String   @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  Place       Place[]
+
+  @@map("category")
+}
+
+model Department {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  Place     Place[]
+
+  @@map("department")
+}
+
+model Service {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  description  String         @db.Text
+  iconUrl      String         @map("icon_url")
+  isActive     Boolean        @default(true) @map("is_active")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  PlaceService PlaceService[]
+
+  @@map("service")
+}
+
+enum PlaceStatus {
+  REVIEW
+  APPROVED
+  REJECTED
+}
+
+model Place {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  description  String         @db.Text
+  latitude     Float
+  longitude    Float
+  cheaperPrice Float          @map("cheaper_price")
+  status       PlaceStatus    @default(REVIEW)
+  minCapacity  Int            @map("min_capacity")
+  categoryId   Int            @map("category_id")
+  userId       Int            @map("user_id")
+  departmentId Int            @map("department_id")
+  isActive     Boolean        @default(true) @map("is_active")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  user         User           @relation(fields: [userId], references: [id])
+  category     Category       @relation(fields: [categoryId], references: [id])
+  department   Department     @relation(fields: [departmentId], references: [id])
+  PlaceService PlaceService[]
+  Reservation  Reservation[]
+  Room         Room[]
+
+  @@map("place")
+}
+
+model PlacePhoto {
+  id       Int    @id @default(autoincrement())
+  photoUrl String
+
+  @@map("place_photo")
+}
+
+model PlaceService {
+  id            Int      @id @default(autoincrement())
+  placeId       Int      @map("place_id")
+  serviceId     Int      @map("service_id")
+  price         Float
+  providerName  String   @map("provider_name")
+  providerEmail String   @map("provider_email")
+  providerPhone String   @map("provider_phone")
+  isActive      Boolean  @default(true) @map("is_active")
+  place         Place    @relation(fields: [placeId], references: [id])
+  service       Service  @relation(fields: [serviceId], references: [id])
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("place_service")
+}
+
+model Reservation {
+  id              Int      @id @default(autoincrement())
+  reservationDate DateTime @map("reservation_date")
+  isConfirmed     Boolean  @default(false) @map("is_confirmed")
+  startTime       DateTime @map("start_time")
+  endTime         DateTime @map("end_time")
+  userId          Int      @map("user_id")
+  placeId         Int      @map("place_id")
+  roomId          Int      @map("room_id")
+  billId          Int      @unique @map("bill_id")
+  user            User     @relation(fields: [userId], references: [id])
+  place           Place    @relation(fields: [placeId], references: [id])
+  bill            Bill     @relation(fields: [billId], references: [id])
+}
+
+model PlaceServiceReservation {
+  id             Int @id @default(autoincrement())
+  reservationId  Int @map("reservation_id")
+  placeServiceId Int @map("place_service_id")
+}
+
+model Room {
+  id           Int      @id @default(autoincrement())
+  name         String
+  capacity     Int
+  pricePerHour Float    @map("price_per_hour")
+  placeId      Int      @map("place_id")
+  place        Place    @relation(fields: [placeId], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 }
