@@ -7,6 +7,7 @@ import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { PlaceModule } from './place/place.module';
 import { ServiceModule } from './service/service.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ServiceModule } from './service/service.module';
     AuthModule,
     PlaceModule,
     ServiceModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

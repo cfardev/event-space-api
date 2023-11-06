@@ -41,7 +41,7 @@ export class ServiceService {
     }
   }
 
-  findAll(pagination: PaginationDto): Promise<Service[]> {
+  async findAll(pagination: PaginationDto): Promise<Service[]> {
     try {
       const { limit, offset } = pagination;
 
@@ -86,30 +86,38 @@ export class ServiceService {
       throw new BadRequestException('Icon is required');
     }
 
-    const iconUploaded = await this.cloudinary.upload(icon);
+    try {
+      const iconUploaded = await this.cloudinary.upload(icon);
 
-    const updatedService = this.prisma.service.update({
-      where: {
-        id,
-      },
-      data: {
-        ...updateServiceDto,
-        iconUrl: iconUploaded.secure_url,
-      },
-    });
+      const updatedService = this.prisma.service.update({
+        where: {
+          id,
+        },
+        data: {
+          ...updateServiceDto,
+          iconUrl: iconUploaded.secure_url,
+        },
+      });
 
-    return updatedService;
+      return updatedService;
+    } catch (error) {
+      CRUDPrismaCatchError(error, this.logger);
+    }
   }
 
-  remove(id: number) {
-    return this.prisma.service.updateMany({
-      where: {
-        id,
-        isActive: true,
-      },
-      data: {
-        isActive: false,
-      },
-    });
+  async remove(id: number) {
+    try {
+      return this.prisma.service.updateMany({
+        where: {
+          id,
+          isActive: true,
+        },
+        data: {
+          isActive: false,
+        },
+      });
+    } catch (error) {
+      CRUDPrismaCatchError(error, this.logger);
+    }
   }
 }

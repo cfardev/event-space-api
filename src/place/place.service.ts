@@ -1,14 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterPlaceDto } from './dto';
 import { UserRole } from '@prisma/client';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { CRUDPrismaCatchError } from 'src/common/utils/catchErrorsUtils';
 
 @Injectable()
 export class PlaceService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private readonly logger = new Logger(PlaceService.name);
 
   async create(createPlaceDto: CreatePlaceDto, userId: number) {
     const user = await this.prisma.user.findFirst({
@@ -86,42 +94,133 @@ export class PlaceService {
     });
   }
 
-  async findAll(filterPlaceDto: FilterPlaceDto, pagination: PaginationDto) {
-    const { limit = 16, offset = 0 } = pagination;
-    const { search = '' } = filterPlaceDto;
+  async findAll(
+    filterPlaceDto: FilterPlaceDto,
+    pagination: PaginationDto,
+    userId: number,
+  ) {
+    try {
+      const { limit = 16, offset = 0 } = pagination;
+      const { search = '' } = filterPlaceDto;
 
-    const places = await this.prisma.place.findMany({
-      take: limit,
-      skip: offset,
-      where: {
-        name: {
-          contains: search,
-          mode: 'insensitive',
+      const user = await this.prisma.user.findFirst({
+        where: {
+          id: userId,
         },
-        categoryId: filterPlaceDto.category,
-        departmentId: filterPlaceDto.department,
-        cheaperPrice: {
-          gte: filterPlaceDto.minPrice,
-          lte: filterPlaceDto.maxPrice,
-        },
-        minCapacity: {
-          lte: filterPlaceDto.capacity,
-        },
-      },
-    });
+      });
 
-    return places;
+      const places = await this.prisma.place.findMany({
+        take: limit,
+        skip: offset,
+        where: {
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
+          categoryId: filterPlaceDto.category,
+          departmentId: filterPlaceDto.department,
+          cheaperPrice: {
+            gte: filterPlaceDto.minPrice,
+            lte: filterPlaceDto.maxPrice,
+          },
+          minCapacity: {
+            lte: filterPlaceDto.capacity,
+          },
+
+          status:
+            user.role === UserRole.USER ||
+            user.role === UserRole.CORPORATIVE_USER
+              ? 'APPROVED'
+              : undefined,
+        },
+      });
+
+      return places;
+    } catch (error) {
+      CRUDPrismaCatchError(error, this.logger);
+    }
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} place`;
+    try {
+      const place = this.prisma.place.findUnique({
+        where: { id },
+        include: {
+          PlaceService: {
+            include: {
+              service: true,
+            },
+          },
+          Room: true,
+          user: true,
+          category: true,
+          department: true,
+        },
+      });
+
+      if (!place) {
+        throw new NotFoundException('Place not found');
+      }
+
+      return place;
+    } catch (error) {
+      CRUDPrismaCatchError(error, this.logger);
+    }
   }
 
-  update(id: number, updatePlaceDto: UpdatePlaceDto) {
-    return `This action updates a #${id} place`;
+  update(id: number, updatePlaceDto: UpdatePlaceDto, userId: number) {
+    try {
+      if (!this.checkPlaceProperty(id, userId)) {
+        throw new ForbiddenException(
+          'You are not allowed to update this place',
+        );
+      }
+
+      const updatedPlace = this.prisma.place.update({
+        where: { id },
+        data: {
+          ...updatePlaceDto,
+        },
+      });
+
+      return updatedPlace;
+    } catch (error) {
+      CRUDPrismaCatchError(error, this.logger);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} place`;
+  async remove(id: number, userId: number) {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (
+        user.role !== UserRole.ADMIN &&
+        user.role !== UserRole.WORKER &&
+        !this.checkPlaceProperty(id, userId)
+      ) {
+        throw new ForbiddenException(
+          'You are not allowed to delete this place',
+        );
+      }
+
+      return { message: 'Place deleted successfully' };
+    } catch (error) {
+      CRUDPrismaCatchError(error, this.logger);
+    }
+  }
+
+  private checkPlaceProperty(placeId: number, userId: number) {
+    const place = this.prisma.place.findFirst({
+      where: {
+        id: placeId,
+        userId: userId,
+      },
+    });
+
+    return place;
   }
 }

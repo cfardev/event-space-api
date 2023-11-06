@@ -30,12 +30,14 @@ export class PlaceController {
     return this.placeService.create(createPlaceDto, idUser);
   }
 
+  @UseGuards(JwtGuard)
   @Get()
   findAll(
     @Query() filterPlaceDto: FilterPlaceDto,
     @Query() paginationDto: PaginationDto,
+    @GetUser('id') idUser: number,
   ) {
-    return this.placeService.findAll(filterPlaceDto, paginationDto);
+    return this.placeService.findAll(filterPlaceDto, paginationDto, idUser);
   }
 
   @Get(':id')
@@ -44,12 +46,17 @@ export class PlaceController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePlaceDto: UpdatePlaceDto) {
-    return this.placeService.update(+id, updatePlaceDto);
+  update(
+    @Param('id') id: string,
+    @Body() updatePlaceDto: UpdatePlaceDto,
+    @GetUser('id') idUser: number,
+  ) {
+    return this.placeService.update(+id, updatePlaceDto, idUser);
   }
 
+  @UseGuards(JwtGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.placeService.remove(+id);
+  remove(@Param('id') id: string, @GetUser('id') idUser: number) {
+    return this.placeService.remove(+id, idUser);
   }
 }
