@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
 import { GetUser } from './decorator';
 import { JwtGuard } from './guard/jwt.guard';
 
-@ApiTags('auth')
+@ApiTags('Auth')
 @Controller('/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

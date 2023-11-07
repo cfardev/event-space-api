@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsPositive } from 'class-validator';
+import { PlaceStatus } from '@prisma/client';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsPositive,
+} from 'class-validator';
 
 export class FilterPlaceDto {
   @ApiProperty({
@@ -8,6 +16,7 @@ export class FilterPlaceDto {
   })
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   category?: number;
 
   @ApiProperty({
@@ -16,6 +25,7 @@ export class FilterPlaceDto {
   })
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   department?: number;
 
   @ApiProperty({
@@ -25,6 +35,7 @@ export class FilterPlaceDto {
   @IsInt()
   @IsPositive()
   @IsOptional()
+  @Type(() => Number)
   minPrice?: number;
 
   @ApiProperty({
@@ -34,6 +45,7 @@ export class FilterPlaceDto {
   @IsInt()
   @IsPositive()
   @IsOptional()
+  @Type(() => Number)
   maxPrice?: number;
 
   @ApiProperty({
@@ -42,6 +54,7 @@ export class FilterPlaceDto {
   })
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   capacity?: number;
 
   @ApiProperty({
@@ -50,4 +63,21 @@ export class FilterPlaceDto {
   })
   @IsOptional()
   search?: string;
+
+  @ApiProperty({
+    description: 'Status for place',
+    example: PlaceStatus.APPROVED,
+  })
+  @IsEnum(PlaceStatus)
+  @IsOptional()
+  status?: PlaceStatus;
+
+  @ApiProperty({
+    description: 'Show only my places',
+    example: true,
+  })
+  @IsBoolean()
+  @Type(() => Boolean)
+  @Transform(({ value }) => value === 'true')
+  myPlaces?: boolean;
 }

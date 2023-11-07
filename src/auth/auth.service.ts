@@ -15,13 +15,34 @@ export class AuthService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async getMyInfo(userId: number): Promise<Partial<IGrantedAccess>> {
+  async getMyInfo(userId: number): Promise<any> {
     const user = await this.prisma.user.findFirst({
       where: {
         id: userId,
       },
-      include: {
-        UserInfo: true,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        UserInfo: {
+          select: {
+            name: true,
+            lastname: true,
+            phone: true,
+            photoUrl: true,
+            birthDay: true,
+            address: true,
+            companyName: true,
+            ruc: true,
+            personalId: true,
+          },
+        },
+        BankAccount: {
+          select: {
+            bank: true,
+          },
+        },
       },
     });
 
@@ -29,17 +50,7 @@ export class AuthService {
       throw new BadRequestException('No estas logueado');
     }
 
-    return {
-      user: {
-        email: user.email,
-        username: user.username,
-        name: user.UserInfo[0].name,
-        lastname: user.UserInfo[0].lastname,
-        phone: user.UserInfo[0].phone,
-        photoUrl: user.UserInfo[0].photoUrl,
-        role: user.role,
-      },
-    };
+    return user;
   }
 
   async login(authDto: AuthDto): Promise<IGrantedAccess> {

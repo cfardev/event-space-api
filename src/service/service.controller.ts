@@ -19,7 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
-@ApiTags('service')
+@ApiTags('Service')
 @Controller('service')
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}

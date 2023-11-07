@@ -16,7 +16,9 @@ import { FilterPlaceDto } from './dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { GetUser } from 'src/auth/decorator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Place')
 @Controller('place')
 export class PlaceController {
   constructor(private readonly placeService: PlaceService) {}

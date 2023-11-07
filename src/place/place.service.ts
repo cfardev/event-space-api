@@ -8,7 +8,7 @@ import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterPlaceDto } from './dto';
-import { UserRole } from '@prisma/client';
+import { PlaceStatus, UserRole } from '@prisma/client';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CRUDPrismaCatchError } from 'src/common/utils/catchErrorsUtils';
 
@@ -109,6 +109,17 @@ export class PlaceService {
         },
       });
 
+      if (
+        user.role !== UserRole.WORKER &&
+        user.role !== UserRole.ADMIN &&
+        filterPlaceDto.status !== PlaceStatus.APPROVED &&
+        !filterPlaceDto.myPlaces
+      ) {
+        throw new ForbiddenException(
+          'You are not allowed to see In review & Rejected other people places if you are not a WORKER or ADMIN',
+        );
+      }
+
       const places = await this.prisma.place.findMany({
         take: limit,
         skip: offset,
@@ -120,18 +131,14 @@ export class PlaceService {
           categoryId: filterPlaceDto.category,
           departmentId: filterPlaceDto.department,
           cheaperPrice: {
-            gte: filterPlaceDto.minPrice,
-            lte: filterPlaceDto.maxPrice,
+            gte: filterPlaceDto.minPrice || 0,
+            lte: filterPlaceDto.maxPrice || 99999,
           },
           minCapacity: {
-            lte: filterPlaceDto.capacity,
+            lte: filterPlaceDto.capacity || 99999,
           },
-
-          status:
-            user.role === UserRole.USER ||
-            user.role === UserRole.CORPORATIVE_USER
-              ? 'APPROVED'
-              : undefined,
+          status: filterPlaceDto.status || PlaceStatus.APPROVED,
+          userId: filterPlaceDto.myPlaces ? userId : undefined,
         },
       });
 

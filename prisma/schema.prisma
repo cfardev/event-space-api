@@ -13,6 +13,7 @@ model User {
   username    String        @unique
   password    String
   role        UserRole      @default(USER)
+  isActive    Boolean       @default(true) @map("is_active")
   UserInfo    UserInfo[]
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
