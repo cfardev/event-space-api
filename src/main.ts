@@ -25,6 +25,7 @@ async function bootstrap() {
     .setTitle('DSI API')
     .setDescription('API para el proyecto de DSI')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
