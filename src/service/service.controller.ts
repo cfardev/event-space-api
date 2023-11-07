@@ -16,7 +16,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('Service')
@@ -24,6 +24,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
+  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('icon'))
   @UseGuards(JwtGuard)
@@ -45,6 +46,7 @@ export class ServiceController {
     return this.serviceService.findOne(+id);
   }
 
+  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('icon'))
   @UseGuards(JwtGuard)
@@ -57,6 +59,8 @@ export class ServiceController {
     return this.serviceService.update(+id, updateServiceDto, icon);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.serviceService.remove(+id);

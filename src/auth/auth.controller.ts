@@ -6,7 +6,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthDto, RegisterDto } from './dto';
 import { AuthService } from './auth.service';
 import { GetUser } from './decorator';
@@ -27,6 +27,7 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Get('/me')
   async getCurrentUserInfo(@GetUser('id', ParseIntPipe) id: number) {

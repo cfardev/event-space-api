@@ -16,13 +16,14 @@ import { FilterPlaceDto } from './dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { GetUser } from 'src/auth/decorator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Place')
 @Controller('place')
 export class PlaceController {
   constructor(private readonly placeService: PlaceService) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Post()
   create(
@@ -32,6 +33,7 @@ export class PlaceController {
     return this.placeService.create(createPlaceDto, idUser);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Get()
   findAll(
@@ -47,6 +49,7 @@ export class PlaceController {
     return this.placeService.findOne(+id);
   }
 
+  @ApiBearerAuth()
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -56,6 +59,7 @@ export class PlaceController {
     return this.placeService.update(+id, updatePlaceDto, idUser);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @GetUser('id') idUser: number) {
