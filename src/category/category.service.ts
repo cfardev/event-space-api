@@ -42,6 +42,12 @@ export class CategoryService {
       const categories = await this.prisma.category.findMany({
         skip: offset,
         take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        where: {
+          isActive: true,
+        },
       });
 
       return categories;
@@ -56,6 +62,8 @@ export class CategoryService {
       if (!category) {
         throw new NotFoundException('Category not found');
       }
+
+      return category;
     } catch (error) {
       CRUDPrismaCatchError(error, this.logger);
     }

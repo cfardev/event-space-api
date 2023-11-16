@@ -18,8 +18,6 @@ import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { GetUser } from 'src/auth/decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { User } from 'src/user/entities/user.entity';
-import { UserRoleGuard } from 'src/auth/guard/user-role.guard';
 
 @ApiTags('Reservation')
 @Controller('reservation')

@@ -28,6 +28,11 @@ export class CategoryController {
     return this.categoryService.create(createCategoryDto);
   }
 
+  @Get('count')
+  count() {
+    return this.categoryService.count();
+  }
+
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.categoryService.findAll(pagination);
