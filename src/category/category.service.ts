@@ -27,7 +27,11 @@ export class CategoryService {
 
   async count() {
     try {
-      const count = await this.prisma.category.count();
+      const count = await this.prisma.category.count({
+        where: {
+          isActive: true,
+        },
+      });
 
       return count;
     } catch (error) {
