@@ -363,6 +363,20 @@ export class PlaceService {
         where: { id },
         data: {
           ...updatePlaceDto,
+          PlaceService: {
+            deleteMany: {
+              placeId: id,
+            },
+            createMany: {
+              data: updatePlaceDto.services.map((service) => ({
+                serviceId: service.serviceId,
+                price: service.price,
+                providerEmail: service.providerEmail,
+                providerPhone: service.providerPhone,
+                providerName: service.providerName,
+              })),
+            },
+          },
         },
       });
 
