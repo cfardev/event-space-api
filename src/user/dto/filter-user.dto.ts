@@ -1,4 +1,5 @@
 import { UserRole } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import { IsOptional, IsString, IsEnum } from 'class-validator';
 
 export class FilterUserDto {
@@ -7,6 +8,7 @@ export class FilterUserDto {
   search?: string;
 
   @IsOptional()
-  @IsEnum(UserRole)
-  role?: UserRole;
+  @IsEnum(UserRole, { each: true })
+  @Transform(({ value }) => value.split(','), { toClassOnly: true })
+  roles?: UserRole[];
 }

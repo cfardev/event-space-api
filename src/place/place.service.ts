@@ -19,6 +19,28 @@ export class PlaceService {
 
   private readonly logger = new Logger(PlaceService.name);
 
+  async verifyPlace(idPlace: number, status: PlaceStatus) {
+    const place = await this.prisma.place.findFirst({
+      where: {
+        id: idPlace,
+        status: PlaceStatus.REVIEW,
+      },
+    });
+
+    if (!place) {
+      throw new NotFoundException('Place not found');
+    }
+
+    const updatedPlace = await this.prisma.place.update({
+      where: { id: idPlace },
+      data: {
+        status: status,
+      },
+    });
+
+    return updatedPlace;
+  }
+
   async create(createPlaceDto: CreatePlaceDto, userId: number) {
     const user = await this.prisma.user.findFirst({
       where: {

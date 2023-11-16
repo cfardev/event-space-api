@@ -9,6 +9,7 @@ import { prismaHandleError } from '../../prisma/utils/prisma-handle-error';
 
 export function CRUDPrismaCatchError(error: any, logger: Logger) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    logger.error(error.message);
     prismaHandleError(error);
   } else if (error.status === 403) {
     throw new ForbiddenException(error.message);

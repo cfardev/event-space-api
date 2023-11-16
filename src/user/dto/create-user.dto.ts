@@ -1,16 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, IsOptional } from 'class-validator';
 
-export class UpdateUserDto {
+export class CreateUserDto {
   @ApiProperty({
     description: 'Name of user',
     example: 'Juan',
   })
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
   name: string;
+
+  @ApiProperty({
+    description: 'Email of user',
+    example: 'jhondoe@gmail.com',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
 
   @ApiProperty({
     description: 'Lastname of user',
@@ -18,7 +26,6 @@ export class UpdateUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
   lastname: string;
 
   @ApiProperty({
@@ -27,7 +34,6 @@ export class UpdateUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
   phone: string;
 
   @ApiProperty({
@@ -36,7 +42,6 @@ export class UpdateUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
   address: string;
 
   @ApiProperty({
@@ -46,7 +51,7 @@ export class UpdateUserDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  personalId: string;
+  personalId?: string;
 
   @ApiProperty({
     description: 'Company name of user',
@@ -68,14 +73,16 @@ export class UpdateUserDto {
     description: 'Birthday of user',
     example: '2021-01-01',
   })
-  @IsOptional()
   @Transform(({ value }) => new Date(value))
   @Type(() => Date)
+  @IsOptional()
   birthDay?: Date;
 
   @ApiProperty({
-    description: 'Avatar of user',
-    type: 'file',
+    description: 'Username of user',
+    example: 'juanperez',
   })
-  avatar?: Express.Multer.File;
+  @IsString()
+  @IsNotEmpty()
+  username: string;
 }

@@ -29,10 +29,10 @@ export class UserRoleGuard implements CanActivate {
 
     if (!user) throw new BadRequestException('User not found');
 
-    if (validRoles.includes(user.idRole)) {
+    if (validRoles.includes(user.role)) {
       return true;
     }
 
-    throw new UnauthorizedException(`User ${user.fullName} need a valid role`);
+    throw new UnauthorizedException(`User ${user.id} need a valid role`);
   }
 }

@@ -18,12 +18,24 @@ import { GetUser } from 'src/auth/decorator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RoleProtected } from 'src/auth/decorator/role-protected.decorator';
-import { UserRole } from '@prisma/client';
+import { PlaceStatus, UserRole } from '@prisma/client';
+import { UserRoleGuard } from 'src/auth/guard/user-role.guard';
 
 @ApiTags('Place')
 @Controller('place')
 export class PlaceController {
   constructor(private readonly placeService: PlaceService) {}
+
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard, UserRoleGuard)
+  @Patch('verify/:id')
+  @RoleProtected(UserRole.WORKER)
+  verifyPlace(@Param('id') id: string, @Body('status') status: PlaceStatus) {
+    if (status !== PlaceStatus.APPROVED && status !== PlaceStatus.REJECTED) {
+      throw new Error('Invalid status, must be APPROVED or REJECTED');
+    }
+    return this.placeService.verifyPlace(+id, status);
+  }
 
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
@@ -36,7 +48,6 @@ export class PlaceController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtGuard)
   @UseGuards(JwtGuard)
   @Get('count')
   count(

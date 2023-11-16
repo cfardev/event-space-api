@@ -42,8 +42,8 @@ model UserInfo {
   companyName String?  @map("company_name")
   ruc         String?
   birthDay    DateTime @map("birth_day")
-  user        User     @relation(fields: [userId], references: [id])
   userId      Int      @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")

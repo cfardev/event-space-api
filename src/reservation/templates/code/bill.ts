@@ -1,11 +1,4 @@
-import {
-  Bill,
-  Payment,
-  Place,
-  PlaceService,
-  Reservation,
-  UserInfo,
-} from '@prisma/client';
+import { Bill, Payment, Place, Reservation, UserInfo } from '@prisma/client';
 import * as moment from 'moment';
 
 moment.locale('es');

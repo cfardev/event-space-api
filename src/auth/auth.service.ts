@@ -155,6 +155,6 @@ export class AuthService {
   }
 }
 
-function getAvatarUrl(name: string, lastName: string) {
+export function getAvatarUrl(name: string, lastName: string) {
   return `https://ui-avatars.com/api/?name=${name}+${lastName}&background=random&length=1&size=524`;
 }
