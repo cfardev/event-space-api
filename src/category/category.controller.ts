@@ -33,8 +33,6 @@ export class CategoryController {
     return this.categoryService.findAll(pagination);
   }
 
-  @UseGuards(JwtGuard)
-  @ApiBearerAuth()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoryService.findOne(+id);

@@ -12,11 +12,13 @@ import {
 import { PlaceService } from './place.service';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
-import { FilterPlaceDto } from './dto';
+import { FilterPlaceDto, FilterPublicPlaces } from './dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { GetUser } from 'src/auth/decorator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { RoleProtected } from 'src/auth/decorator/role-protected.decorator';
+import { UserRole } from '@prisma/client';
 
 @ApiTags('Place')
 @Controller('place')
@@ -35,13 +37,38 @@ export class PlaceController {
 
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard)
+  @Get('count')
+  count(
+    @Query() filterPlaceDto: FilterPlaceDto,
+    @GetUser('id') idUser: number,
+  ) {
+    return this.placeService.count(filterPlaceDto, idUser);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Get()
+  @RoleProtected(UserRole.ADMIN, UserRole.CORPORATIVE_USER, UserRole.WORKER)
   findAll(
     @Query() filterPlaceDto: FilterPlaceDto,
     @Query() paginationDto: PaginationDto,
-    @GetUser('id') idUser: number,
+    @GetUser('id') idUser?: number,
   ) {
     return this.placeService.findAll(filterPlaceDto, paginationDto, idUser);
+  }
+
+  @Get('count/public')
+  countPublic(@Query() filterPublicPlaces: FilterPublicPlaces) {
+    return this.placeService.countAllPublic(filterPublicPlaces);
+  }
+
+  @Get('public')
+  findAllPublic(
+    @Query() filterPublicPlaces: FilterPublicPlaces,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.placeService.findAllPublic(filterPublicPlaces, pagination);
   }
 
   @Get(':id')
@@ -50,6 +77,7 @@ export class PlaceController {
   }
 
   @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -60,6 +88,7 @@ export class PlaceController {
   }
 
   @ApiBearerAuth()
+  @UseGuards(JwtGuard)
   @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @GetUser('id') idUser: number) {

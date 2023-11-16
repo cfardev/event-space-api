@@ -9,6 +9,7 @@ import { PlaceModule } from './place/place.module';
 import { ServiceModule } from './service/service.module';
 import { CategoryModule } from './category/category.module';
 import { UserModule } from './user/user.module';
+import { ReservationModule } from './reservation/reservation.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UserModule } from './user/user.module';
     ServiceModule,
     CategoryModule,
     UserModule,
+    ReservationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

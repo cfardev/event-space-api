@@ -24,7 +24,6 @@ export class ServiceService {
     if (!icon) {
       throw new BadRequestException('Icon is required');
     }
-
     try {
       const iconUploaded = await this.cloudinary.upload(icon);
 

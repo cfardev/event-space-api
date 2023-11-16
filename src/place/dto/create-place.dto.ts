@@ -8,17 +8,6 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
-class RoomDto {
-  @IsString()
-  name: string;
-
-  @IsNumber()
-  pricePerHour: number;
-
-  @IsNumber()
-  capacity: number;
-}
-
 class ServiceDto {
   @ApiProperty({
     description: 'Service id',
@@ -112,11 +101,6 @@ export class CreatePlaceDto {
   })
   @IsNumber()
   capacity: number;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => RoomDto)
-  rooms: RoomDto[];
 
   @IsArray()
   @ValidateNested({ each: true })

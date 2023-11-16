@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,6 +17,7 @@ import { FilterUserDto } from './dto/filter-user.dto';
 import { GetUser } from 'src/auth/decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('User')
 @Controller('user')
@@ -34,13 +37,15 @@ export class UserController {
 
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @GetUser('id') idUser: number,
+    @UploadedFile() avatar: Express.Multer.File,
   ) {
-    return this.userService.update(+id, updateUserDto, idUser);
+    return this.userService.update(+id, updateUserDto, idUser, avatar);
   }
 
   @ApiBearerAuth()

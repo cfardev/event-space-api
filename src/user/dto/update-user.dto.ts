@@ -1,4 +1,5 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsOptional,
@@ -72,7 +73,14 @@ export class UpdateUserDto {
     description: 'Birthday of user',
     example: '2021-01-01',
   })
-  @IsDateString()
   @IsOptional()
+  @Transform(({ value }) => new Date(value))
+  @Type(() => Date)
   birthDay?: Date;
+
+  @ApiProperty({
+    description: 'Avatar of user',
+    type: 'file',
+  })
+  avatar?: Express.Multer.File;
 }

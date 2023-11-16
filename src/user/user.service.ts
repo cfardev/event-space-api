@@ -5,10 +5,15 @@ import { UserRole } from '@prisma/client';
 import { CRUDPrismaCatchError } from 'src/common/utils/catchErrorsUtils';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
+import { CloudinaryService } from 'src/common/services';
+import { use } from 'passport';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinary: CloudinaryService,
+  ) {}
 
   private readonly logger = new Logger(UserService.name);
 
@@ -75,7 +80,12 @@ export class UserService {
     }
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto, userId: number) {
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+    userId: number,
+    avatar: Express.Multer.File,
+  ) {
     try {
       const user = await this.prisma.user.findFirst({
         where: {
@@ -85,7 +95,7 @@ export class UserService {
 
       const userToUpdate = await this.prisma.user.findFirst({
         where: {
-          id: userId,
+          id: id,
         },
         include: {
           UserInfo: true,
@@ -96,16 +106,23 @@ export class UserService {
         (user.role !== UserRole.ADMIN && id !== user.id) ||
         (user.role === UserRole.ADMIN &&
           userToUpdate.role !== UserRole.WORKER &&
-          user.role === UserRole.ADMIN)
+          user.role === UserRole.ADMIN &&
+          userToUpdate.role !== UserRole.ADMIN)
       ) {
         throw new ForbiddenException(
           'No tienes permisos para actualizar ese usuario',
         );
       }
 
-      const updatedUser = await this.prisma.userInfo.update({
+      let avatarFile = userToUpdate.UserInfo[0].photoUrl;
+
+      if (avatar) {
+        avatarFile = (await this.cloudinary.upload(avatar)).secure_url;
+      }
+
+      const updatedUser = await this.prisma.userInfo.updateMany({
         where: {
-          id: userToUpdate.UserInfo[0].id,
+          userId: id,
         },
         data: {
           name: updateUserDto.name,
@@ -116,6 +133,7 @@ export class UserService {
           companyName: updateUserDto.companyName,
           ruc: updateUserDto.ruc,
           personalId: updateUserDto.personalId,
+          photoUrl: avatarFile,
         },
       });
 

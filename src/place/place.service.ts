@@ -8,9 +8,10 @@ import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterPlaceDto } from './dto';
-import { PlaceStatus, UserRole } from '@prisma/client';
+import { Place, PlaceStatus, UserRole } from '@prisma/client';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CRUDPrismaCatchError } from 'src/common/utils/catchErrorsUtils';
+import { FilterPublicPlaces } from './dto/filter-public-places';
 
 @Injectable()
 export class PlaceService {
@@ -31,20 +32,11 @@ export class PlaceService {
         description: createPlaceDto.description,
         latitude: createPlaceDto.latitude,
         longitude: createPlaceDto.longitude,
-        cheaperPrice: createPlaceDto.pricePerHour,
-        minCapacity: createPlaceDto.capacity,
+        pricePerHour: createPlaceDto.pricePerHour,
+        capacity: createPlaceDto.capacity,
         categoryId: createPlaceDto.categoryId,
         userId: user.id,
         departmentId: createPlaceDto.departmentId,
-        Room: {
-          createMany: {
-            data: createPlaceDto.rooms.map((room) => ({
-              name: room.name,
-              capacity: room.capacity,
-              pricePerHour: room.pricePerHour,
-            })),
-          },
-        },
         PlaceService: {
           createMany: {
             data: createPlaceDto.services.map((service) => ({
@@ -59,37 +51,29 @@ export class PlaceService {
       },
     });
 
-    //If rooms is empty create a default one
-    if (createPlaceDto.rooms.length === 0) {
-      await this.prisma.room.create({
-        data: {
-          name: 'Sala Principal',
-          capacity: createPlaceDto.capacity,
-          pricePerHour: createPlaceDto.pricePerHour,
-          placeId: newPlace.id,
-        },
-      });
-    }
-
     return newPlace;
   }
 
-  async count(filterPlaceDto: FilterPlaceDto) {
+  async count(filterPlaceDto: FilterPlaceDto, userId: number) {
+    const { search = '' } = filterPlaceDto;
+
     return this.prisma.place.count({
       where: {
         name: {
-          contains: filterPlaceDto.search,
+          contains: search,
           mode: 'insensitive',
         },
         categoryId: filterPlaceDto.category,
         departmentId: filterPlaceDto.department,
-        cheaperPrice: {
-          gte: filterPlaceDto.minPrice,
-          lte: filterPlaceDto.maxPrice,
+        pricePerHour: {
+          gte: filterPlaceDto.minPrice || 0,
+          lte: filterPlaceDto.maxPrice || 99999,
         },
-        minCapacity: {
-          lte: filterPlaceDto.capacity,
+        capacity: {
+          lte: filterPlaceDto.capacity || 99999,
         },
+        status: filterPlaceDto.status || PlaceStatus.APPROVED,
+        userId: filterPlaceDto.myPlaces ? userId : undefined,
       },
     });
   }
@@ -100,41 +84,31 @@ export class PlaceService {
     userId: number,
   ) {
     try {
-      const { limit = 16, offset = 0 } = pagination;
-      const { search = '' } = filterPlaceDto;
-
       const user = await this.prisma.user.findFirst({
         where: {
           id: userId,
         },
       });
 
-      if (
-        user.role !== UserRole.WORKER &&
-        user.role !== UserRole.ADMIN &&
-        filterPlaceDto.status !== PlaceStatus.APPROVED &&
-        !filterPlaceDto.myPlaces
-      ) {
-        throw new ForbiddenException(
-          'You are not allowed to see In review & Rejected other people places if you are not a WORKER or ADMIN',
-        );
+      if (user.role === UserRole.CORPORATIVE_USER && !filterPlaceDto.myPlaces) {
+        throw new ForbiddenException('You are not allowed to see all places');
       }
 
       const places = await this.prisma.place.findMany({
-        take: limit,
-        skip: offset,
+        take: pagination.limit || undefined,
+        skip: pagination.offset || undefined,
         where: {
           name: {
-            contains: search,
+            contains: filterPlaceDto.search || '',
             mode: 'insensitive',
           },
           categoryId: filterPlaceDto.category,
           departmentId: filterPlaceDto.department,
-          cheaperPrice: {
+          pricePerHour: {
             gte: filterPlaceDto.minPrice || 0,
             lte: filterPlaceDto.maxPrice || 99999,
           },
-          minCapacity: {
+          capacity: {
             lte: filterPlaceDto.capacity || 99999,
           },
           status: filterPlaceDto.status || PlaceStatus.APPROVED,
@@ -148,20 +122,131 @@ export class PlaceService {
     }
   }
 
-  findOne(id: number) {
+  async countAllPublic(filterPlaceDto: FilterPublicPlaces): Promise<number> {
+    return this.prisma.place.count({
+      where: {
+        name: {
+          contains: filterPlaceDto.search || '',
+          mode: 'insensitive',
+        },
+        categoryId: filterPlaceDto.category,
+        departmentId: filterPlaceDto.department,
+        pricePerHour: {
+          gte: filterPlaceDto.minPrice || 0,
+          lte: filterPlaceDto.maxPrice || 99999,
+        },
+        capacity: {
+          lte: filterPlaceDto.capacity || 99999,
+        },
+        status: PlaceStatus.APPROVED,
+      },
+    });
+  }
+
+  async findAllPublic(
+    filterPlaceDto: FilterPublicPlaces,
+    pagination: PaginationDto,
+  ): Promise<Partial<Place>[]> {
+    const places = await this.prisma.place.findMany({
+      take: pagination.limit || undefined,
+      skip: pagination.offset || undefined,
+      where: {
+        name: {
+          contains: filterPlaceDto.search || '',
+          mode: 'insensitive',
+        },
+        categoryId: filterPlaceDto.category,
+        departmentId: filterPlaceDto.department,
+        pricePerHour: {
+          gte: filterPlaceDto.minPrice || 0,
+          lte: filterPlaceDto.maxPrice || 99999,
+        },
+        capacity: {
+          lte: filterPlaceDto.capacity || 99999,
+        },
+        status: PlaceStatus.APPROVED,
+      },
+      select: {
+        id: true,
+        name: true,
+        pricePerHour: true,
+        department: {
+          select: {
+            name: true,
+          },
+        },
+        capacity: true,
+        Photos: {
+          select: {
+            photoUrl: true,
+          },
+        },
+        PlaceService: {
+          select: {
+            service: {
+              select: {
+                name: true,
+                iconUrl: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return places;
+  }
+
+  async findOne(id: number) {
     try {
       const place = this.prisma.place.findUnique({
         where: { id },
-        include: {
-          PlaceService: {
-            include: {
-              service: true,
+
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          Photos: {
+            select: {
+              photoUrl: true,
             },
           },
-          Room: true,
-          user: true,
-          category: true,
-          department: true,
+          category: {
+            select: {
+              name: true,
+            },
+          },
+          department: {
+            select: {
+              name: true,
+            },
+          },
+          capacity: true,
+          pricePerHour: true,
+          user: {
+            select: {
+              email: true,
+              UserInfo: {
+                select: {
+                  name: true,
+                  lastname: true,
+                  phone: true,
+                  photoUrl: true,
+                },
+              },
+            },
+          },
+          PlaceService: {
+            select: {
+              service: {
+                select: {
+                  name: true,
+                  iconUrl: true,
+                },
+              },
+              price: true,
+            },
+          },
         },
       });
 
@@ -175,7 +260,7 @@ export class PlaceService {
     }
   }
 
-  update(id: number, updatePlaceDto: UpdatePlaceDto, userId: number) {
+  async update(id: number, updatePlaceDto: UpdatePlaceDto, userId: number) {
     try {
       if (!this.checkPlaceProperty(id, userId)) {
         throw new ForbiddenException(
@@ -183,7 +268,7 @@ export class PlaceService {
         );
       }
 
-      const updatedPlace = this.prisma.place.update({
+      const updatedPlace = await this.prisma.place.update({
         where: { id },
         data: {
           ...updatePlaceDto,
