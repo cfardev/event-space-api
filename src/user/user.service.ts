@@ -88,6 +88,7 @@ export class UserService {
   async findAll(pagination: PaginationDto, filter: FilterUserDto) {
     const users = await this.prisma.user.findMany({
       select: {
+        id: true,
         username: true,
         email: true,
         role: true,
