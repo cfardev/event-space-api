@@ -12,12 +12,80 @@ import { Place, PlaceStatus, UserRole } from '@prisma/client';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CRUDPrismaCatchError } from 'src/common/utils/catchErrorsUtils';
 import { FilterPublicPlaces } from './dto/filter-public-places';
+import { CloudinaryService } from 'src/common/services';
 
 @Injectable()
 export class PlaceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinary: CloudinaryService,
+  ) {}
 
   private readonly logger = new Logger(PlaceService.name);
+
+  async deletePhoto(idPhoto: number, userId: number) {
+    const photo = await this.prisma.placePhoto.findFirst({
+      where: {
+        id: idPhoto,
+      },
+      select: {
+        place: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+
+    if (!photo) {
+      throw new NotFoundException('Photo not found');
+    }
+
+    if (photo.place.userId !== userId) {
+      throw new ForbiddenException('You are not allowed to delete this photo');
+    }
+
+    await this.prisma.placePhoto.delete({
+      where: {
+        id: idPhoto,
+      },
+    });
+
+    return { message: 'Photo deleted successfully' };
+  }
+
+  async uploadPhotoToPlace(
+    idPlace: number,
+    photo: Express.Multer.File,
+    userId: number,
+  ) {
+    const place = await this.prisma.place.findFirst({
+      where: {
+        id: idPlace,
+      },
+    });
+
+    if (!place) {
+      throw new NotFoundException('Place not found');
+    }
+
+    if (place.userId !== userId) {
+      throw new ForbiddenException(
+        'You are not allowed to upload a photo to this place',
+      );
+    }
+
+    const uploadedPhoto = await this.cloudinary.upload(photo);
+
+    const newPhoto = await this.prisma.placePhoto.create({
+      data: {
+        idPlace: idPlace,
+        photoUrl: uploadedPhoto.secure_url,
+      },
+    });
+
+    return newPhoto;
+  }
 
   async verifyPlace(idPlace: number, status: PlaceStatus) {
     const place = await this.prisma.place.findFirst({
@@ -230,6 +298,7 @@ export class PlaceService {
           description: true,
           Photos: {
             select: {
+              id: true,
               photoUrl: true,
             },
           },

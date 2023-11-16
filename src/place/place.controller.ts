@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { PlaceService } from './place.service';
 import { CreatePlaceDto } from './dto/create-place.dto';
@@ -20,6 +22,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RoleProtected } from 'src/auth/decorator/role-protected.decorator';
 import { PlaceStatus, UserRole } from '@prisma/client';
 import { UserRoleGuard } from 'src/auth/guard/user-role.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Place')
 @Controller('place')
@@ -35,6 +38,25 @@ export class PlaceController {
       throw new Error('Invalid status, must be APPROVED or REJECTED');
     }
     return this.placeService.verifyPlace(+id, status);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
+  @Post('upload-image/:id')
+  @UseInterceptors(FileInterceptor('photo'))
+  uploadImage(
+    @Param('id') id: string,
+    @GetUser('id') idUser: number,
+    @UploadedFile() photo: Express.Multer.File,
+  ) {
+    return this.placeService.uploadPhotoToPlace(+id, photo, idUser);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
+  @Delete('delete-image/:id')
+  deleteImage(@Param('id') id: string, @GetUser('id') idUser: number) {
+    return this.placeService.deletePhoto(+id, idUser);
   }
 
   @ApiBearerAuth()
