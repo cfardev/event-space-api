@@ -6,6 +6,7 @@ export class FilterReservationDto {
   @ApiProperty({
     description: 'Search by name or place name',
     example: 'Auditorio',
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -14,6 +15,7 @@ export class FilterReservationDto {
   @ApiProperty({
     description: 'Date',
     example: new Date(),
+    required: false,
   })
   @IsDate()
   @Type(() => Date)
@@ -23,6 +25,7 @@ export class FilterReservationDto {
   @ApiProperty({
     description: 'Category ID',
     example: 1,
+    required: false,
   })
   @IsOptional()
   @IsInt()
@@ -32,6 +35,7 @@ export class FilterReservationDto {
   @ApiProperty({
     description: 'Reservator ID',
     example: 1,
+    required: false,
   })
   @IsInt()
   @Type(() => Number)
@@ -41,6 +45,7 @@ export class FilterReservationDto {
   @ApiProperty({
     description: 'Host ID',
     example: 1,
+    required: false,
   })
   @IsOptional()
   @IsInt()

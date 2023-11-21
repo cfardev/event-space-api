@@ -13,6 +13,7 @@ export class FilterPlaceDto {
   @ApiProperty({
     description: 'Category id',
     example: 1,
+    required: false,
   })
   @IsInt()
   @IsOptional()
@@ -22,6 +23,7 @@ export class FilterPlaceDto {
   @ApiProperty({
     description: 'Department id',
     example: 1,
+    required: false,
   })
   @IsInt()
   @IsOptional()
@@ -31,6 +33,7 @@ export class FilterPlaceDto {
   @ApiProperty({
     description: 'Min price for place',
     example: 1000,
+    required: false,
   })
   @IsInt()
   @IsPositive()
@@ -41,6 +44,7 @@ export class FilterPlaceDto {
   @ApiProperty({
     description: 'Max price for place',
     example: 1000,
+    required: false,
   })
   @IsInt()
   @IsPositive()
@@ -51,6 +55,7 @@ export class FilterPlaceDto {
   @ApiProperty({
     description: 'Capacity for place',
     example: 1,
+    required: false,
   })
   @IsInt()
   @IsOptional()
@@ -59,6 +64,7 @@ export class FilterPlaceDto {
 
   @ApiProperty({
     description: 'Search by name',
+    required: false,
     example: 'Casa de playa',
   })
   @IsOptional()
@@ -67,6 +73,7 @@ export class FilterPlaceDto {
   @ApiProperty({
     description: 'Status for place',
     example: PlaceStatus.APPROVED,
+    required: false,
   })
   @IsEnum(PlaceStatus)
   @IsOptional()
@@ -75,6 +82,7 @@ export class FilterPlaceDto {
   @ApiProperty({
     description: 'Show only my places',
     example: true,
+    required: false,
   })
   @IsBoolean()
   @Type(() => Boolean)

@@ -7,6 +7,7 @@ export class PaginationDto {
     type: Number,
     description: 'Numero de elementos que quieres que se muestren',
     example: 0,
+    required: false,
   })
   @IsOptional()
   @IsInt()
@@ -20,6 +21,7 @@ export class PaginationDto {
     default: 100,
     description:
       'Numero de elementos que quieres que se salten desde el inicio',
+    required: false,
   })
   @IsOptional()
   @IsInt()

@@ -6,6 +6,7 @@ export class FilterPublicPlaces {
   @ApiProperty({
     description: 'Category id',
     example: 1,
+    required: false,
   })
   @IsInt()
   @IsOptional()
@@ -15,6 +16,7 @@ export class FilterPublicPlaces {
   @ApiProperty({
     description: 'Department id',
     example: 1,
+    required: false,
   })
   @IsInt()
   @IsOptional()
@@ -24,6 +26,7 @@ export class FilterPublicPlaces {
   @ApiProperty({
     description: 'Min price for place',
     example: 1000,
+    required: false,
   })
   @IsInt()
   @IsPositive()
@@ -34,6 +37,7 @@ export class FilterPublicPlaces {
   @ApiProperty({
     description: 'Max price for place',
     example: 1000,
+    required: false,
   })
   @IsInt()
   @IsPositive()
@@ -44,6 +48,7 @@ export class FilterPublicPlaces {
   @ApiProperty({
     description: 'Capacity for place',
     example: 1,
+    required: false,
   })
   @IsInt()
   @IsOptional()
@@ -53,6 +58,7 @@ export class FilterPublicPlaces {
   @ApiProperty({
     description: 'Search by name',
     example: 'Casa de playa',
+    required: false,
   })
   @IsOptional()
   search?: string;
