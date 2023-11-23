@@ -149,6 +149,7 @@ export class PlaceService {
 
     return this.prisma.place.count({
       where: {
+        isActive: true,
         name: {
           contains: search,
           mode: 'insensitive',
@@ -229,6 +230,7 @@ export class PlaceService {
           lte: filterPlaceDto.capacity || 99999,
         },
         status: PlaceStatus.APPROVED,
+        isActive: true,
       },
     });
   }
