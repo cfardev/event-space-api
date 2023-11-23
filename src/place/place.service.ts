@@ -205,6 +205,37 @@ export class PlaceService {
           status: filterPlaceDto.status || PlaceStatus.APPROVED,
           userId: filterPlaceDto.myPlaces ? userId : undefined,
         },
+        include: {
+          Photos: {
+            select: {
+              id: true,
+              photoUrl: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          PlaceService: {
+            select: {
+              service: {
+                select: {
+                  name: true,
+                  iconUrl: true,
+                },
+              },
+              price: true,
+            },
+          },
+        },
       });
 
       return places;
@@ -306,11 +337,13 @@ export class PlaceService {
           },
           category: {
             select: {
+              id: true,
               name: true,
             },
           },
           department: {
             select: {
+              id: true,
               name: true,
             },
           },
@@ -318,6 +351,7 @@ export class PlaceService {
           pricePerHour: true,
           user: {
             select: {
+              id: true,
               email: true,
               UserInfo: {
                 select: {
