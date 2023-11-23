@@ -102,6 +102,7 @@ export class UserService {
             companyName: true,
             ruc: true,
             personalId: true,
+            photoUrl: true,
           },
         },
         _count: {

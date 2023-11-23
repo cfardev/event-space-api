@@ -322,7 +322,7 @@ export class PlaceService {
 
   async findOne(id: number) {
     try {
-      const place = this.prisma.place.findUnique({
+      const place = await this.prisma.place.findUnique({
         where: { id },
 
         select: {
@@ -361,6 +361,7 @@ export class PlaceService {
                   photoUrl: true,
                 },
               },
+              role: true,
             },
           },
           PlaceService: {
@@ -379,6 +380,16 @@ export class PlaceService {
 
       if (!place) {
         throw new NotFoundException('Place not found');
+      }
+
+      if (place.user.role === UserRole.ADMIN) {
+        place.user.UserInfo[0] = {
+          name: 'Miranda Eventos',
+          lastname: '& Más',
+          phone: '+505 78936279',
+          photoUrl:
+            'https://res.cloudinary.com/deymfl4hm/image/upload/v1700775212/o5kqjosdq4igrn0jx9qy.png',
+        };
       }
 
       return place;
