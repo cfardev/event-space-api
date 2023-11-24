@@ -41,6 +41,11 @@ export class ServiceController {
     return this.serviceService.findAll(paginationDto);
   }
 
+  @Get('count')
+  count() {
+    return this.serviceService.count();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.serviceService.findOne(+id);

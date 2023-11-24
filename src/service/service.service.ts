@@ -40,6 +40,18 @@ export class ServiceService {
     }
   }
 
+  async count(): Promise<number> {
+    try {
+      return this.prisma.service.count({
+        where: {
+          isActive: true,
+        },
+      });
+    } catch (error) {
+      CRUDPrismaCatchError(error, this.logger);
+    }
+  }
+
   async findAll(pagination: PaginationDto): Promise<Service[]> {
     try {
       const { limit, offset } = pagination;
