@@ -93,12 +93,20 @@ export class ServiceService {
     updateServiceDto: UpdateServiceDto,
     icon: Express.Multer.File,
   ) {
-    if (!icon) {
-      throw new BadRequestException('Icon is required');
-    }
-
     try {
-      const iconUploaded = await this.cloudinary.upload(icon);
+      const service = await this.prisma.service.findFirst({
+        where: {
+          id,
+          isActive: true,
+        },
+      });
+
+      let iconUrl = service.iconUrl;
+
+      if (!icon) {
+        const iconUploaded = await this.cloudinary.upload(icon);
+        iconUrl = iconUploaded.secure_url;
+      }
 
       const updatedService = this.prisma.service.update({
         where: {
@@ -106,7 +114,7 @@ export class ServiceService {
         },
         data: {
           ...updateServiceDto,
-          iconUrl: iconUploaded.secure_url,
+          iconUrl: iconUrl,
         },
       });
 
