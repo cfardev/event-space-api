@@ -451,6 +451,13 @@ export class PlaceService {
         );
       }
 
+      await this.prisma.place.update({
+        where: { id },
+        data: {
+          isActive: false,
+        },
+      });
+
       return { message: 'Place deleted successfully' };
     } catch (error) {
       CRUDPrismaCatchError(error, this.logger);
