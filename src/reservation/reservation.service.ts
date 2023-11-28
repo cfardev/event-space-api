@@ -161,7 +161,7 @@ export class ReservationService {
       },
     });
 
-    // await this.sendBillEmail(reservation, payment.totalHours);
+    await this.sendBillEmail(reservation, payment.totalHours);
 
     return reservation;
   }
