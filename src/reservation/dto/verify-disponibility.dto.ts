@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsDate, IsInt } from 'class-validator';
 
 export class VerifyDisponibilityDto {
@@ -8,6 +9,7 @@ export class VerifyDisponibilityDto {
     example: '2021-08-01 00:00:00',
   })
   @IsDate()
+  @Type(() => Date)
   startDate: Date;
 
   @ApiProperty({
@@ -16,6 +18,7 @@ export class VerifyDisponibilityDto {
     example: '2021-08-01 00:00:00',
   })
   @IsDate()
+  @Type(() => Date)
   endDate: Date;
 
   @ApiProperty({
