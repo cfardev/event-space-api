@@ -78,6 +78,7 @@ export class AuthService {
     return {
       token,
       user: {
+        id: user.id,
         email: user.email,
         username: user.username,
         name: user.UserInfo[0].name,
@@ -128,6 +129,7 @@ export class AuthService {
     return {
       token,
       user: {
+        id: newUser.id,
         email: newUser.email,
         username: newUser.username,
         name: newUser.UserInfo[0].name,
