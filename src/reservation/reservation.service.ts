@@ -16,7 +16,8 @@ import * as moment from 'moment';
 export class ReservationService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly pdf: PDFService, // private readonly email: EmailService,
+    private readonly pdf: PDFService,
+    private readonly email: EmailService,
   ) {}
 
   private async getTotalPayment(
@@ -447,59 +448,55 @@ export class ReservationService {
       },
     });
 
-    // await this.email.sendEmail(
-    //   reservation.user.email,
-    //   'Reservación cancelada',
-    //   `Hola ${reservation.user.UserInfo[0].name} ${reservation.user.UserInfo[0].lastname},<br> Tu reservación ha sido cancelada. Gracias por utilizar EventSpace!`,
-    // );
+    await this.email.sendEmail(
+      reservation.user.email,
+      'Reservación cancelada',
+      `Hola ${reservation.user.UserInfo[0].name} ${reservation.user.UserInfo[0].lastname},<br> Tu reservación ha sido cancelada. Gracias por utilizar EventSpace!`,
+    );
 
     return { message: 'Reservation canceled' };
   }
 
-  // private async sendBillEmail(reservation, totalHours: number) {
-  //   const emailBody = `Hola ${reservation.user.UserInfo[0].name} ${reservation.user.UserInfo[0].lastname},<br> Te enviamos la factura electrónica de tu reserva. Gracias por utilizar EventSpace!}`;
-
-  //   const placeServices = reservation.PlaceServiceReservation.map(
-  //     (placeService) => {
-  //       return {
-  //         serviceName: placeService.placeService.service.name,
-  //         price: placeService.placeService.price,
-  //       };
-  //     },
-  //   );
-
-  //   const billHTML = billTemp(
-  //     reservation.user.UserInfo[0],
-  //     reservation.user.email,
-  //     reservation.place,
-  //     placeServices,
-  //     reservation.bill,
-  //     reservation.bill.Payment,
-  //     totalHours,
-  //     reservation,
-  //   );
-
-  //   const pdf: any = await this.pdf.createPDF(billHTML, {
-  //     format: 'Letter',
-  //     childProcessOptions: {
-  //       env: {
-  //         OPENSSL_CONF: '/dev/null',
-  //       },
-  //     },
-  //   });
-
-  //   await this.email.sendEmail(
-  //     reservation.user.email,
-  //     'Factura de reserva',
-  //     emailBody,
-  //     [
-  //       {
-  //         filename: 'Factura.pdf',
-  //         content: Buffer.from(pdf.buffer, 'base64'),
-  //       },
-  //     ],
-  //   );
-  // }
+  private async sendBillEmail(reservation, totalHours: number) {
+    const emailBody = `Hola ${reservation.user.UserInfo[0].name} ${reservation.user.UserInfo[0].lastname},<br> Te enviamos la factura electrónica de tu reserva. Gracias por utilizar EventSpace!}`;
+    const placeServices = reservation.PlaceServiceReservation.map(
+      (placeService) => {
+        return {
+          serviceName: placeService.placeService.service.name,
+          price: placeService.placeService.price,
+        };
+      },
+    );
+    const billHTML = billTemp(
+      reservation.user.UserInfo[0],
+      reservation.user.email,
+      reservation.place,
+      placeServices,
+      reservation.bill,
+      reservation.bill.Payment,
+      totalHours,
+      reservation,
+    );
+    const pdf: any = await this.pdf.createPDF(billHTML, {
+      format: 'Letter',
+      childProcessOptions: {
+        env: {
+          OPENSSL_CONF: '/dev/null',
+        },
+      },
+    });
+    await this.email.sendEmail(
+      reservation.user.email,
+      'Factura de reserva',
+      emailBody,
+      [
+        {
+          filename: 'Factura.pdf',
+          content: Buffer.from(pdf.buffer, 'base64'),
+        },
+      ],
+    );
+  }
 }
 
 function generateReferenceCode() {

@@ -14,7 +14,8 @@ import * as argon from 'argon2';
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cloudinary: CloudinaryService, // private readonly emailService: EmailService,
+    private readonly cloudinary: CloudinaryService,
+    private readonly emailService: EmailService,
   ) {}
 
   private readonly logger = new Logger(UserService.name);
@@ -51,11 +52,11 @@ export class UserService {
         },
       });
 
-      // await this.emailService.sendEmail(
-      //   user.email,
-      //   'Bienvenido al equipo de EventSpace',
-      //   `Hola ${user.UserInfo[0].name} ${user.UserInfo[0].lastname}, te damos la bienvenida a EventSpace, tu usuario es ${user.username} y tu contraseña es ${passwordGenerated}`,
-      // );
+      await this.emailService.sendEmail(
+        user.email,
+        'Bienvenido al equipo de EventSpace',
+        `Hola ${user.UserInfo[0].name} ${user.UserInfo[0].lastname}, te damos la bienvenida a EventSpace, tu usuario es ${user.username} y tu contraseña es ${passwordGenerated}`,
+      );
 
       await delete user.password;
 
