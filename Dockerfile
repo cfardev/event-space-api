@@ -14,6 +14,7 @@ WORKDIR /usr/src/app
 COPY package.json ./
 COPY yarn.lock ./
 RUN yarn install --frozen-lockfile
+RUN yarn add phantomjs-prebuilt --force
 
 # Generate Prisma client
 COPY prisma ./prisma/
